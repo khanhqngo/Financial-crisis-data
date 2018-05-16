@@ -109,5 +109,44 @@ ggplot(new_consumer_spending, aes(y = `Personal insurance and pensions`, x = Yea
 
 Through out 20th century and early 21th century, the data illustrates that consumer spending does not have the same trend during each financial crisis. Particularly, the spending in 1992 is much lower than that of from 2000 to 2008. Between 2000 and 2002, it was the dot com bubble that threatened the finance in America, the consequences were consumers had to spend more than usual and those money were utilized as capitals to regain the balance of the market. Meanwhile, from 2007 to 2009, it was the financial crisis in US that made customers lose their assets as well as break down many investment company, which forced the government to handle the bad consequences during and after the recession. On the other hand, we took a closer look at the spending on food, particularly when consumers were eating at home or outside. Based on the graph, we can see that the budget for food at home was higher than that of away from home. Besides, compare numbers during the financial crisis between 1992 and 2008, consumers tend to spend more money for eating outside whereas their budgets for eating at home were decreased. Furthermore, we want to see whether the insurance whicha person have affect their decision to contribute money in order to rebalance the market or not. According to the graph, we can conclude that consumers were willing to contribute their cashs so as to end the financial crisis. Particularly, from 1984 to 2010, the cash contribution went up around $147. We should notice that in this data, we have not considered about the inflation rate in 3 decades.         
 
+#Unemployment Rates around the world
 
+We have not finished analyzing this data yet, cause we got stuck on how to change the variables which include different components such as Germany (1). The general approach is the same as the two data wrangling and visualization above.
 
+```{r, eval = TRUE}
+unemployment_world <- read_html("https://www.bls.gov/spotlight/2012/recession/data_ilc_unemployment.htm")
+world1 <- html_nodes(unemployment_world, "th , #ilc_unemployment\\.xls td")
+world2 <- html_text(world1)
+
+Month <- c()
+UnitedStates <- numeric()
+Australia <- numeric()
+Canada <- numeric()
+France <- numeric()
+#Germany (1) <- numeric()
+Italy <- numeric()
+#Japan (2) <- numeric()
+#Nether-lands <- numeric()
+Sweden <- numeric()
+UnitedKingdom <- numeric()
+str(world2)
+for (i in 1:59) {
+  Month[i] <- world2[11*i + 1]
+  UnitedStates[i] <- world2[11*i + 2]
+  Australia[i] <- world2[11*i + 3]
+  Canada[i] <- world2[11*i + 4]
+  France[i] <- world2[11*i + 5]
+  #Germany(1)[i] <- world2[11*i + 6]
+  Italy[i] <- world2[11*i + 7]
+  #Japan(2)[i] <- world2[11*i + 8]
+  #Nether-lands[i] <- world2[11*i + 9]
+  Sweden[i] <- world2[11*i + 10]
+  UnitedKingdom[i] <- world2[11*i + 11]
+}
+```
+
+# Unemployment by state
+```{r}
+state_unemployment <- read_csv("~/Mscs 264 S18/Project/BraydenKhanh/state_unemployment_data.csv")
+state_unemployment_crisis <- state_unemployment[-(52)]
+```
