@@ -1,0 +1,113 @@
+---
+title: "Financial-crisis-data- Khanh&Brayden"
+output: pdf_document
+---
+
+```{r setup, include=FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(stringr)
+library(rvest)
+library(httr)
+library(forcats)
+library(shiny)
+```
+
+#Unemployment by race
+The graphs are based on the statistical data that was collected and analyzed by the Bureau of Labor Statistics, which looks at the unemployment rates of different racial groups in the United States over time. Since most of the data prior to January of 1980 is not available, the unemployment data before January of 1980 was removed from the database. This analysis of the unemployment rates by race will focus on the years 2007 and 2008 in order to understand the impact of the Financial Crisis of 2007-2008 on different racial groups in the United States. While the unemployment rate for White Americans hovered around 8-9% at the time of the Financial Crisis, the unemployment rates for Hispanic or Latino Americans and Black/African-Americans exceeded 12% and 14%, showing that the impact of the 2007-2008 Financial Crisis was much more significant for people of color in the United States. It is important to note that this trend is due to the systemic racism within the American economic system that allowed White Americans to accumulate more wealth while people of color were subjugated under the system of oppression and discrimination. The unemployment rate of men during the 2007-2008 Financial Crisis was a little over 10%, while that of women was around 9%, which is not as significant as the differences observed between different racial groups. The slightly higher unemployment rate in men can be explained by the fact that the financial industry, which was heavily affected by the 2007-2008 Financial Crisis, is dominated by men. 
+```{r, message = FALSE} 
+unemployment_race <- read_html("https://www.bls.gov/spotlight/2012/recession/data_cps_unemp_demographics.htm") 
+demographic <- html_nodes(unemployment_race, "#book2\\.xls td , th , .sub0")
+new <- html_text(demographic)
+Month <- c()
+White <- c() 
+BlackorAfricanAmerican <- c()
+HispanicorLatino <- c()
+Men <- c() 
+Women <- c()
+for (i in 1:5382) {
+    Month[i] <- new[7*i + 1]
+    White[i] <- new[7*i + 2]
+    BlackorAfricanAmerican[i] <- new[7*i + 3]
+    HispanicorLatino[i] <- new[7*i + 4]
+    Men[i] <- new[7*i + 5]
+    Women[i] <- new[7*i + 6]
+} 
+
+new_demographic <- tibble(Month,White,BlackorAfricanAmerican,HispanicorLatino,Men,Women)
+new_demographic <- slice(new_demographic, 385:768)
+new_demographic[,2:6] <- sapply(new_demographic[,2:6], as.numeric)
+new_demographic$Month <- as.Date(paste('01', new_demographic$Month), format = "%d %b %Y")
+
+
+ggplot(data = new_demographic) +  
+  geom_line(mapping = aes(x = Month, y = White)) 
+ggplot(data = new_demographic) + 
+  geom_line(mapping = aes(x = Month, y = HispanicorLatino))
+ggplot(data = new_demographic) +
+  geom_line(mapping = aes(x = Month, y = BlackorAfricanAmerican))
+ggplot(data = new_demographic) + 
+  geom_line(mapping = aes(x = Month, y = Men))
+ggplot(data = new_demographic) + 
+  geom_line(mapping = aes(x = Month, y = Women))
+
+```
+
+#Consumer Spending
+
+```{r, message = FALSE}
+consumer_spending <- read_html("https://www.bls.gov/spotlight/2012/recession/data_cex_1984.htm")
+spending <- html_nodes(consumer_spending, "#cex_adjusted td , th")
+update <- html_text(spending)
+Year <- numeric()
+Total <- numeric()
+Housing <- numeric()
+Transportation <- numeric()
+Personalinsuranceandpensions <- numeric()
+Foodathome <- numeric()
+Healthcare <- numeric()
+Entertainment <- numeric()
+Foodawayfromhome <- numeric()
+Apparelandservices <- numeric()
+Cashcontributions <- numeric()
+Allotherexpenditures <- numeric()
+for (i in 1:27) {
+  Year[i] <- update[12*i + 1]
+  Total[i] <- update[12*i + 2]
+  Housing[i] <- update[12*i + 3]
+  Transportation[i] <- update[12*i + 4]
+  Personalinsuranceandpensions[i] <- update[12*i + 5]
+  Foodathome[i] <- update[12*i + 6]
+  Healthcare[i] <- update[12*i + 7]
+  Entertainment[i] <- update[12*i + 8]
+  Foodawayfromhome[i] <- update[12*i + 9]
+  Apparelandservices[i] <- update[12*i + 10]
+  Cashcontributions[i] <- update[12*i + 11]
+  Allotherexpenditures[i] <- update[12*i + 12]
+}
+new_consumer_spending <- tibble(Year, Total, Housing, Transportation, Personalinsuranceandpensions, Foodathome, Healthcare, Entertainment, Foodawayfromhome, Apparelandservices, Cashcontributions, Allotherexpenditures)
+
+new_consumer_spending <- new_consumer_spending %>%
+  rename(`Personal insurance and pensions` = Personalinsuranceandpensions,
+         `Food at home` = Foodathome,
+         `Food away from home` = Foodawayfromhome,
+         `Apparel and services` = Apparelandservices,
+         `Cash contributions` = Cashcontributions,
+         `All other expenditures` = Allotherexpenditures)
+
+ggplot(new_consumer_spending, aes(x = Year, y = Total)) +  
+  geom_point() +
+  geom_smooth(method = `loess`)
+ggplot(new_consumer_spending, aes(y = `Food at home`, x = Year)) +  
+  geom_tile(aes(fill = `Food away from home`))
+ggplot(new_consumer_spending, aes(y = `Personal insurance and pensions`, x = Year)) +  
+  geom_tile(aes(fill = `Cash contributions`))
+```
+
+Through out 20th century and early 21th century, the data illustrates that consumer spending does not have the same trend during each financial crisis. Particularly, the spending in 1992 is much lower than that of from 2000 to 2008. Between 2000 and 2002, it was the dot com bubble that threatened the finance in America, the consequences were consumers had to spend more than usual and those money were utilized as capitals to regain the balance of the market. Meanwhile, from 2007 to 2009, it was the financial crisis in US that made customers lose their assets as well as break down many investment company, which forced the government to handle the bad consequences during and after the recession. On the other hand, we took a closer look at the spending on food, particularly when consumers were eating at home or outside. Based on the graph, we can see that the budget for food at home was higher than that of away from home. Besides, compare numbers during the financial crisis between 1992 and 2008, consumers tend to spend more money for eating outside whereas their budgets for eating at home were decreased. Furthermore, we want to see whether the insurance whicha person have affect their decision to contribute money in order to rebalance the market or not. According to the graph, we can conclude that consumers were willing to contribute their cashs so as to end the financial crisis. Particularly, from 1984 to 2010, the cash contribution went up around $147. We should notice that in this data, we have not considered about the inflation rate in 3 decades.         
+
+
+
